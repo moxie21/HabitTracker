@@ -4,6 +4,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import RegisterForm from './components/RegisterForm';
+import Articles from './components/Articles';
+import DailyTasks from './components/DailyTasks';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -15,15 +17,23 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+Date.prototype.getDayOfTheWeek = function () {
+    return this.getDay() === 0 ? 6 : this.getDay() - 1;
+}
+
 export default function App() {
 	return (
-		<Router>
-			<Switch>
-				<Route path="/register">
-					<Register />
-				</Route>
-			</Switch>
-		</Router>
+		// <Router>
+		// 	<Switch>
+		// 		<Route path="/register">
+		// 			<Register />
+		// 		</Route>
+		// 	</Switch>
+		// </Router>
+		<>
+			<DailyTasks/>
+			{/* <Register/> */}
+		</>
 	);
 }
 
