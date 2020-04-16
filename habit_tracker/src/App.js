@@ -6,6 +6,7 @@ import Container from '@material-ui/core/Container';
 import RegisterForm from './components/RegisterForm';
 import Articles from './components/Articles';
 import DailyTasks from './components/DailyTasks';
+import { ToastProvider } from 'react-toast-notifications';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -23,17 +24,18 @@ Date.prototype.getDayOfTheWeek = function () {
 
 export default function App() {
 	return (
-		// <Router>
-		// 	<Switch>
-		// 		<Route path="/register">
-		// 			<Register />
-		// 		</Route>
-		// 	</Switch>
-		// </Router>
-		<>
-			<DailyTasks/>
-			{/* <Register/> */}
-		</>
+		<ToastProvider>
+			<Router>
+				<Switch>
+					<Route path="/register">
+						<Register />
+					</Route>
+					<Route path="/">
+						<DailyTasks/>
+					</Route>
+				</Switch>
+			</Router>
+		</ToastProvider>
 	);
 }
 

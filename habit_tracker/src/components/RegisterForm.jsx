@@ -1,59 +1,91 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
-import IconButton from "@material-ui/core/IconButton";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
-import InputLabel from "@material-ui/core/InputLabel";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import FormControl from "@material-ui/core/FormControl";
-import TextField from "@material-ui/core/TextField";
-import Visibility from "@material-ui/icons/Visibility";
-import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import MenuItem from "@material-ui/core/MenuItem";
-import Select from "@material-ui/core/Select";
-import InputBase from "@material-ui/core/InputBase";
-import Button from "@material-ui/core/Button";
-import { green } from "@material-ui/core/colors";
+import {
+    IconButton,
+    OutlinedInput,
+    InputLabel,
+    InputAdornment,
+    FormControl,
+    TextField,
+    Visibility,
+    VisibilityOff,
+    MenuItem,
+    Select,
+    InputBase,
+    Button,
+    Grid,
+} from "@material-ui/core";
+import { useToasts } from "react-toast-notifications";
+// import BasicDatePicker from './BasicDatePicker';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     root: {
-        display: "flex",
-        flexWrap: "wrap",
+        // display: "block",
+        // flexWrap: "wrap"
+    },
+    margin: {
+        // margin: theme.spacing(1),
+    },
+    withoutLabel: {
+        // marginTop: theme.spacing(3),
+    },
+    textField: {
+        width: 400,
+        marginBottom: theme.spacing(5),
         "& label.Mui-focused": {
-            color: "green"
+            color: "#3DC1C1",
         },
         "& .MuiInput-underline:after": {
-            borderBottomColor: "green"
+            borderBottomColor: "#3DC1C1",
         },
         "& .MuiOutlinedInput-root": {
             "&.Mui-focused fieldset": {
-                borderColor: "green"
-            }
-        }
+                borderColor: "#3DC1C1",
+            },
+        },
     },
-    margin: {
-        margin: theme.spacing(1)
+    formControl: {
+        minWidth: 400,
+        marginBottom: theme.spacing(5),
+        "& label.Mui-focused": {
+            color: "#3DC1C1",
+        },
+        "& .MuiInput-underline:after": {
+            borderBottomColor: "#3DC1C1",
+        },
     },
-    withoutLabel: {
-        marginTop: theme.spacing(3)
-    },
-    textField: {
-        width: 200
-    }
 }));
 
-const ColorButton = withStyles(theme => ({
+const ColorButton = withStyles((theme) => ({
     root: {
+        display: "block",
+        background: "linear-gradient(45deg, #3CAA9D 30%, #1EE0D8 90%)",
+        borderRadius: 3,
+        border: 0,
         color: "white",
-        backgroundColor: green[500],
-        "&:hover": {
-            backgroundColor: green[700]
-        }
-    }
+        height: 48,
+        padding: "0 30px",
+        boxShadow: "0 3px 5px 2px #E5E5E5",
+        marginTop: theme.spacing(3),
+    },
 }))(Button);
+
+const initialValues = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    gender: '',
+    country: ''
+    // selectedDate
+};
 
 export default function InputAdornments() {
     const classes = useStyles();
+    const { addToast } = useToasts();
+    const [values, setValues] = useState(initialValues);
+    const [errors, setErrors] = useState({});
 
     const inputLabel = useRef(null);
     const [labelWidth, setLabelWidth] = useState(0);
@@ -61,128 +93,156 @@ export default function InputAdornments() {
         setLabelWidth(inputLabel.current.offsetWidth);
     }, []);
 
-    const [values, setValues] = useState({
-        gender: "",
-        showPassword: false
-    });
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const handleInputChange = e => {
+        const { name, value } = e.target;
+        const fieldValue = { [name]: value };
 
-    const handleChange = prop => event => {
-        setValues({ ...values, [prop]: event.target.value });
+        console.log(e.target);
+
+        setValues({
+            ...values,
+            ...fieldValue
+        });
+        
+        validate(fieldValue);
     };
 
-    const handleClickShowPassword = () => {
-        setValues({ ...values, showPassword: !values.showPassword });
-    };
+    const validate = (fieldValues = values) => {
+        let temp = {};
 
-    const handleMouseDownPassword = event => {
-        event.preventDefault();
-    };
+        console.log(fieldValues);
 
-    function register() {
-        let data = new FormData();
-        console.log(email);
+        if ('firstName' in fieldValues) {
+            temp.firstName = fieldValues.firstName ? "" : "This field is required.";
+        }
+        if ('lastName' in fieldValues) {
+            temp.lastName = fieldValues.lastName ? "" : "This field is required.";
+        }
+        if ('email' in fieldValues) {
+            temp.email = (/^$|.+@.+..+/).test(fieldValues.email) ? "" : "Please enter a valid email";
+        }
+        if ('password' in fieldValues) {
+            temp.password = fieldValues.password ? "" : "This field is required.";
+        }
+        if ('gender' in fieldValues) {
+            temp.gender = fieldValues.gender ? "" : "This field is required.";
+        }
+        if ('country' in fieldValues) {
+            temp.country = fieldValues.country ? "" : "This field is required.";
+        }
+
+        setErrors({...temp});
+
+        if (fieldValues === values) {
+            return Object.values(temp).every(s => s === "");
+        }
     }
 
+    const handleSubmit = e => {
+        e.preventDefault();
+
+        if (validate()) {
+            const onSuccess = () => {
+                addToast("User registered successfully", { appearance: 'success' });
+            }
+        }
+    };
+
     return (
-        <div className={classes.root}>
-            <div>
-                <div>
+        <form autoComplete="off" noValidate onSubmit={handleSubmit}>
+            <Grid container>
+                <Grid item xs={12}>
                     <TextField
+                        className={classes.textField}
                         label="FirstName"
-                        id="outlined-start-adornment"
-                        className={clsx(classes.margin, classes.textField)}
-                        variant="outlined"
-                        onChange={e => setFirstName(e.target.value)}
+                        name="firstName"
+                        value={values.firstName}
+                        onChange={handleInputChange}
+                        {...(errors.firstName && { error: true, helperText: errors.firstName })}
                     />
-                </div>
-                <div>
                     <TextField
+                        className={classes.textField}
                         label="LastName"
-                        id="outlined-start-adornment"
-                        className={clsx(classes.margin, classes.textField)}
-                        variant="outlined"
-                        onChange={e => setLastName(e.target.value)}
+                        name="lastName"
+                        value={values.lastName}
+                        onChange={handleInputChange}
+                        {...(errors.lastName && { error: true, helperText: errors.lastName })}
                     />
-                </div>
-                <div>
                     <TextField
+                        className={classes.textField}
                         label="Email"
-                        id="outlined-start-adornment"
-                        className={clsx(classes.margin, classes.textField)}
-                        variant="outlined"
-                        onChange={e => setEmail(e.target.value)}
+                        name="email"
+                        value={values.email}
+                        onChange={handleInputChange}
+                        {...(errors.email && { error: true, helperText: errors.email })}
                     />
-                </div>
-                <div>
-                    <FormControl
-                        variant="outlined"
-                        className={clsx(classes.margin, classes.textField)}
-                    >
-                        <InputLabel
-                            ref={inputLabel}
-                            id="demo-simple-select-outlined-label"
-                        >
-                            Gender
-                        </InputLabel>
+                    <TextField
+                        className={classes.textField}
+                        label="Password"
+                        name="password"
+                        value={values.password}
+                        onChange={handleInputChange}
+                        {...(errors.password && { error: true, helperText: errors.password })}
+                        type="password"
+                        autoComplete="current-password"
+                    />
+                    <FormControl className={classes.formControl}>
+                        <InputLabel ref={inputLabel}>Gender</InputLabel>
                         <Select
-                            labelId="demo-simple-select-outlined-label"
-                            id="demo-simple-select-outlined"
+                            className={classes.select}
                             value={values.gender}
-                            onChange={handleChange("gender")}
                             labelWidth={labelWidth}
                         >
                             <MenuItem value={"M"}>M</MenuItem>
                             <MenuItem value={"F"}>F</MenuItem>
                         </Select>
                     </FormControl>
-                </div>
-                <div>
-                    <FormControl
-                        className={clsx(classes.margin, classes.textField)}
-                        variant="outlined"
-                    >
-                        <InputLabel htmlFor="outlined-adornment-password">
-                            Password
-                        </InputLabel>
-                        <OutlinedInput
-                            id="outlined-adornment-password"
-                            type={values.showPassword ? "text" : "password"}
-                            value={values.password}
-                            onChange={handleChange("password")}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password visibility"
-                                        onClick={handleClickShowPassword}
-                                        onMouseDown={handleMouseDownPassword}
-                                        edge="end"
-                                    >
-                                        {values.showPassword ? (
-                                            <Visibility />
-                                        ) : (
-                                            <VisibilityOff />
-                                        )}
-                                    </IconButton>
-                                </InputAdornment>
-                            }
-                            labelWidth={70}
-                        />
-                    </FormControl>
-                </div>
-                <div>
+                    <TextField
+                        className={classes.textField}
+                        label="Country"
+                        name="country"
+                        value={values.country}
+                        onChange={handleInputChange}
+                        {...(errors.country && { error: true, helperText: errors.country })}
+                    />
+                    {/* <BasicDatePicker/> */}
                     <ColorButton
                         variant="contained"
                         className={classes.margin}
-                        onClick={register}
+                        type="submit"
                     >
                         Register
                     </ColorButton>
-                </div>
-            </div>
-        </div>
+                </Grid>
+            </Grid>
+        </form>
     );
+}
+
+{
+    /* <InputLabel>
+                    Password
+                </InputLabel>
+                <OutlinedInput
+                    type={values.showPassword ? "text" : "password"}
+                    value={values.password}
+                    onChange={handleChange("password")}
+                    endAdornment={
+                        <InputAdornment position="end">
+                            <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                edge="end"
+                            >
+                                {values.showPassword ? (
+                                    <Visibility />
+                                ) : (
+                                    <VisibilityOff />
+                                )}
+                            </IconButton>
+                        </InputAdornment>
+                    }
+                    labelWidth={70}
+                /> */
 }

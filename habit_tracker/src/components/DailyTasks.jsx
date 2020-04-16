@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Paper, Grid, Box } from "@material-ui/core";
+import { Link } from 'react-router-dom';
 import {makeStyles} from "@material-ui/styles";
 import TaskBox from "./TaskBox";
 
@@ -118,8 +119,9 @@ export default function DailyTasks() {
 
     return (
         <div>
-            <h1>Hello</h1>
-            <br/><br/>
+            <Link to="/register">
+                <h1>Hello</h1>
+            </Link>
 
             <Grid className={classes.gridBorderRounded}>
                 {dates.map((date, key) => 
