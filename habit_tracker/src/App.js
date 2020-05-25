@@ -1,53 +1,64 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
-import { makeStyles } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Container from '@material-ui/core/Container';
-import RegisterForm from './components/RegisterForm';
-import Articles from './components/Articles';
-import DailyTasks from './components/DailyTasks';
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { Router, Route } from 'react-router-dom';
+import './App.css';
+import Register from './pages/Register';
+import Login from './pages/Login';
 import { ToastProvider } from 'react-toast-notifications';
+import { history } from './helpers/history';
+import { alertActions } from './actions/alert.actions';
+import { PrivateRoute } from './components/PrivateRoute';
+import { Homepage } from './pages/Homepage';
+import Habits from './pages/Habits';
+import Tasks from './pages/Tasks';
+import NavbarLogged from './components/NavbarLogged';
+import NavbarNotLogged from './components/NavbarNotLogged';
+import HighlightsCalendar from './components/HighlightsCalendar';
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        flexGrow: 1
-	},
-	container: {
-        display: 'flex',
-        flexWrap: 'wrap'
-    },
-}));
+function App(props) {
+    const { dispatch, alert } = props;
+    const [loggedIn, setLoggedIn] = useState(false);
 
-Date.prototype.getDayOfTheWeek = function () {
-    return this.getDay() === 0 ? 6 : this.getDay() - 1;
+    useEffect(() => setLoggedIn(localStorage.getItem('user') && localStorage.getItem('user').length));
+
+    history.listen((location, action) => {
+        dispatch(alertActions.clear());
+    });
+
+    return (
+        <ToastProvider>
+            <div className="jumbotron">
+                {/* <div className="App">
+                    <Register />
+                </div> */}
+                <div className="container">
+                    <div className="col-sm-8 col-sm-offset-2">
+                        {
+                            alert.message && <div className={`alert ${alert.type}`}>{alert.message}</div>
+                        }
+                        <Router history={history}>
+                            <div>
+                                {loggedIn ? <NavbarLogged /> : <NavbarNotLogged />}
+                                <br/><br/><br/><br/><br/>
+                                <PrivateRoute exact path="/" component={Homepage} />
+                                <PrivateRoute path="/habits" component={Habits} />
+                                <PrivateRoute path='/tasks' component={Tasks} />
+                                <PrivateRoute path="/highlights" component={HighlightsCalendar} />
+                                <Route path="/register" component={Register} />
+                                <Route path="/login" component={Login} />
+                            </div>
+                        </Router>
+                    </div>
+                </div>
+            </div>
+        </ToastProvider>
+    );
 }
 
-export default function App() {
-	return (
-		<ToastProvider>
-			<Router>
-				<Switch>
-					<Route path="/register">
-						<Register />
-					</Route>
-					<Route path="/">
-						<DailyTasks/>
-					</Route>
-				</Switch>
-			</Router>
-		</ToastProvider>
-	);
+const mapStateToProps = state => {
+    const { alert } = state;
+
+    return { alert };
 }
 
-function Register() {
-	return (
-		<div className="App">
-			<React.Fragment>
-				<CssBaseline />
-				<Container maxWidth="sm">
-					<RegisterForm />
-				</Container>
-			</React.Fragment>
-		</div>
-	);
-}
+export default connect(mapStateToProps)(App);
